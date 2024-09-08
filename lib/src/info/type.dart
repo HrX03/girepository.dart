@@ -2,9 +2,9 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/libraries.dart';
-import 'package:dlib_gen/src/types.dart';
+import 'package:girepository/src/info/base.dart';
+import 'package:girepository/src/libraries.dart';
+import 'package:girepository/src/types.dart';
 
 enum GITypeTag implements GEnum {
   void_(0),
@@ -34,6 +34,19 @@ enum GITypeTag implements GEnum {
   final int value;
 
   const GITypeTag(this.value);
+
+  bool get isBasic {
+    return value < GITypeTag.array.value || value == GITypeTag.unichar.value;
+  }
+
+  bool get isNumeric {
+    return value >= GITypeTag.int8.value && value <= GITypeTag.double_.value;
+  }
+
+  bool get isContainer {
+    return value == GITypeTag.array.value ||
+        (value >= GITypeTag.glist.value && value <= GITypeTag.ghash.value);
+  }
 }
 
 enum GIArrayType implements GEnum {
@@ -50,8 +63,13 @@ enum GIArrayType implements GEnum {
 
 final class GITypeInfoNative extends Opaque {}
 
-class GITypeInfo extends GIInfo<GITypeInfoNative> {
-  const GITypeInfo.fromPointer(super.pointer);
+extension GITypeInfoPointerExt on GITypeInfo {
+  Pointer<GITypeInfoNative> get pointer => voidPointer.cast();
+}
+
+class GITypeInfo extends GIBaseInfo {
+  GITypeInfo.fromPointer(Pointer<GITypeInfoNative> pointer)
+      : super.raw(pointer.cast());
 
   bool isPointer() {
     return _g_type_info_is_pointer(pointer);

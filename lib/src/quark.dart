@@ -3,7 +3,7 @@
 import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
-import 'package:dlib_gen/src/libraries.dart';
+import 'package:girepository/src/libraries.dart';
 
 final G_FILE_ERROR = GQuark.fromString("g-file-error-quark");
 final G_IO_ERROR = GQuark.fromString("g-io-error-quark");

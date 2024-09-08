@@ -2,13 +2,13 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/argument.dart';
-import 'package:dlib_gen/src/error.dart';
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/info/function.dart';
-import 'package:dlib_gen/src/info/signal.dart';
-import 'package:dlib_gen/src/libraries.dart';
-import 'package:dlib_gen/src/types.dart';
+import 'package:girepository/src/argument.dart';
+import 'package:girepository/src/error.dart';
+import 'package:girepository/src/info/callable.dart';
+import 'package:girepository/src/info/function.dart';
+import 'package:girepository/src/info/signal.dart';
+import 'package:girepository/src/libraries.dart';
+import 'package:girepository/src/types.dart';
 import 'package:ffi/ffi.dart';
 
 enum GIVFuncInfoFlag implements GFlag {
@@ -25,8 +25,13 @@ enum GIVFuncInfoFlag implements GFlag {
 
 final class GIVFuncInfoNative extends Opaque {}
 
-class GIVFuncInfo extends GIInfo<GIVFuncInfoNative> {
-  const GIVFuncInfo.fromPointer(super.pointer);
+extension GIVFuncInfoPointerExt on GIVFuncInfo {
+  Pointer<GIVFuncInfoNative> get pointer => voidPointer.cast();
+}
+
+class GIVFuncInfo extends GICallableInfo {
+  GIVFuncInfo.fromPointer(Pointer<GIVFuncInfoNative> pointer)
+      : super.raw(pointer.cast());
 
   Set<GIVFuncInfoFlag> getFlags() {
     return GFlag.split(

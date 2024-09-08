@@ -2,16 +2,21 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/argument.dart';
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/info/type.dart';
-import 'package:dlib_gen/src/libraries.dart';
+import 'package:girepository/src/argument.dart';
+import 'package:girepository/src/info/base.dart';
+import 'package:girepository/src/info/type.dart';
+import 'package:girepository/src/libraries.dart';
 import 'package:ffi/ffi.dart';
 
 final class GIConstantInfoNative extends Opaque {}
 
-class GIConstantInfo extends GIInfo<GIConstantInfoNative> {
-  const GIConstantInfo.fromPointer(super.pointer);
+extension GIConstantInfoPointerExt on GIConstantInfo {
+  Pointer<GIConstantInfoNative> get pointer => voidPointer.cast();
+}
+
+class GIConstantInfo extends GIBaseInfo {
+  GIConstantInfo.fromPointer(Pointer<GIConstantInfoNative> pointer)
+      : super.raw(pointer.cast());
 
   void freeValue(GIArgument argument) {
     return _g_constant_info_free_value(pointer, argument.pointer);

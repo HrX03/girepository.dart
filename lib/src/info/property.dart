@@ -2,12 +2,12 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/info/arg.dart';
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/info/function.dart';
-import 'package:dlib_gen/src/info/type.dart';
-import 'package:dlib_gen/src/libraries.dart';
-import 'package:dlib_gen/src/types.dart';
+import 'package:girepository/src/info/arg.dart';
+import 'package:girepository/src/info/base.dart';
+import 'package:girepository/src/info/function.dart';
+import 'package:girepository/src/info/type.dart';
+import 'package:girepository/src/libraries.dart';
+import 'package:girepository/src/types.dart';
 
 enum GParamFlag implements GFlag {
   readable(0),
@@ -29,8 +29,13 @@ enum GParamFlag implements GFlag {
 
 final class GIPropertyInfoNative extends Opaque {}
 
-class GIPropertyInfo extends GIInfo<GIPropertyInfoNative> {
-  const GIPropertyInfo.fromPointer(super.pointer);
+extension GIPropertyInfoPointerExt on GIPropertyInfo {
+  Pointer<GIPropertyInfoNative> get pointer => voidPointer.cast();
+}
+
+class GIPropertyInfo extends GIBaseInfo {
+  GIPropertyInfo.fromPointer(Pointer<GIPropertyInfoNative> pointer)
+      : super.raw(pointer.cast());
 
   Set<GParamFlag> getFlags() {
     return GFlag.split(_g_property_info_get_flags(pointer), GParamFlag.values);

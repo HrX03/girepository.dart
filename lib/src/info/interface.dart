@@ -2,20 +2,26 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/info/constant.dart';
-import 'package:dlib_gen/src/info/function.dart';
-import 'package:dlib_gen/src/info/property.dart';
-import 'package:dlib_gen/src/info/signal.dart';
-import 'package:dlib_gen/src/info/struct.dart';
-import 'package:dlib_gen/src/info/vfunc.dart';
-import 'package:dlib_gen/src/libraries.dart';
+import 'package:girepository/src/info/base.dart';
+import 'package:girepository/src/info/constant.dart';
+import 'package:girepository/src/info/function.dart';
+import 'package:girepository/src/info/property.dart';
+import 'package:girepository/src/info/registered_type.dart';
+import 'package:girepository/src/info/signal.dart';
+import 'package:girepository/src/info/struct.dart';
+import 'package:girepository/src/info/vfunc.dart';
+import 'package:girepository/src/libraries.dart';
 import 'package:ffi/ffi.dart';
 
 final class GIInterfaceInfoNative extends Opaque {}
 
-class GIInterfaceInfo extends GIInfo<GIInterfaceInfoNative> {
-  const GIInterfaceInfo.fromPointer(super.pointer);
+extension GIInterfaceInfoPointerExt on GIInterfaceInfo {
+  Pointer<GIInterfaceInfoNative> get pointer => voidPointer.cast();
+}
+
+class GIInterfaceInfo extends GIRegisteredTypeInfo {
+  GIInterfaceInfo.fromPointer(Pointer<GIInterfaceInfoNative> pointer)
+      : super.raw(pointer.cast());
 
   int getNPrerequisites() {
     return _g_interface_info_get_n_prerequisites(pointer);

@@ -2,25 +2,17 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/error.dart';
-import 'package:dlib_gen/src/libraries.dart';
-import 'package:dlib_gen/src/list.dart';
-import 'package:dlib_gen/src/typelib.dart';
+import 'package:girepository/src/info/base.dart';
+import 'package:girepository/src/error.dart';
+import 'package:girepository/src/libraries.dart';
+import 'package:girepository/src/list.dart';
+import 'package:girepository/src/typelib.dart';
+import 'package:girepository/src/types.dart';
 import 'package:ffi/ffi.dart';
 
 final class GIRepositoryNative extends Opaque {}
 
 extension type GIRepository._(Pointer<GIRepositoryNative> _this) {
-  static GSList<String> getSearchPath() {
-    return GSList.fromPointer(
-      _g_irepository_get_search_path(),
-      (data) {
-        return data.cast<Utf8>().toDartString();
-      },
-    );
-  }
-
   static void prependSearchPath(String directory) {
     return using((arena) {
       return _g_irepository_prepend_search_path(
@@ -31,6 +23,15 @@ extension type GIRepository._(Pointer<GIRepositoryNative> _this) {
 
   static GIRepository getDefault() {
     return GIRepository._(_g_irepository_get_default());
+  }
+
+  GSList<String> getSearchPath() {
+    return GSList.fromPointer(
+      _g_irepository_get_search_path(),
+      (data) {
+        return data.cast<Utf8>().toDartString();
+      },
+    );
   }
 
   GIBaseInfo? findByName(String namespace, String name) {
@@ -53,17 +54,22 @@ extension type GIRepository._(Pointer<GIRepositoryNative> _this) {
         namespace.toNativeUtf8(allocator: arena).cast(),
       );
 
-      final List<String> result = [];
-
-      int index = 0;
-      while (pointer[index] != nullptr) {
-        final str = pointer[index].cast<Utf8>().toDartString();
-        result.add(str);
-        index++;
+      try {
+        return charPPToString(pointer);
+      } finally {
+        calloc.free(pointer);
       }
-
-      return result;
     });
+  }
+
+  List<String> getLoadedNamespaces() {
+    final pointer = _g_irepository_get_loaded_namespaces(_this);
+
+    try {
+      return charPPToString(pointer);
+    } finally {
+      calloc.free(pointer);
+    }
   }
 
   int getNInfos(String namespace) {
@@ -98,7 +104,18 @@ extension type GIRepository._(Pointer<GIRepositoryNative> _this) {
     return result;
   }
 
-  bool isRegistered(String namespace, String? version) {
+  String? getCPrefix(String namespace) {
+    return using((arena) {
+      final result = _g_irepository_get_c_prefix(
+        _this,
+        namespace.toNativeUtf8(allocator: arena).cast(),
+      );
+      if (result == nullptr) return null;
+      return result.cast<Utf8>().toDartString();
+    });
+  }
+
+  bool isRegistered(String namespace, [String? version]) {
     return using((arena) {
       return _g_irepository_is_registered(
         _this,
@@ -116,7 +133,7 @@ extension type GIRepository._(Pointer<GIRepositoryNative> _this) {
     });
   }
 
-  GITypelib? require(String namespace, String? version) {
+  GITypelib? require(String namespace, [String? version]) {
     return using((arena) {
       return handleGError((nativeErr) {
         final pointer = _g_irepository_require(
@@ -174,6 +191,14 @@ final _g_irepository_get_n_infos = libgirepository.lookupFunction<
       Pointer<Char>,
     )>('g_irepository_get_n_infos');
 
+final _g_irepository_get_loaded_namespaces = libgirepository.lookupFunction<
+    Pointer<Pointer<Char>> Function(
+      Pointer<GIRepositoryNative>,
+    ),
+    Pointer<Pointer<Char>> Function(
+      Pointer<GIRepositoryNative>,
+    )>('g_irepository_get_loaded_namespaces');
+
 final _g_irepository_get_info = libgirepository.lookupFunction<
     Pointer<GIBaseInfoNative> Function(
       Pointer<GIRepositoryNative>,
@@ -185,6 +210,16 @@ final _g_irepository_get_info = libgirepository.lookupFunction<
       Pointer<Char>,
       int,
     )>('g_irepository_get_info');
+
+final _g_irepository_get_c_prefix = libgirepository.lookupFunction<
+    Pointer<Char> Function(
+      Pointer<GIRepositoryNative>,
+      Pointer<Char>,
+    ),
+    Pointer<Char> Function(
+      Pointer<GIRepositoryNative>,
+      Pointer<Char>,
+    )>('g_irepository_get_c_prefix');
 
 final _g_irepository_is_registered = libgirepository.lookupFunction<
     Bool Function(

@@ -2,10 +2,10 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/info/type.dart';
-import 'package:dlib_gen/src/libraries.dart';
-import 'package:dlib_gen/src/types.dart';
+import 'package:girepository/src/info/base.dart';
+import 'package:girepository/src/info/type.dart';
+import 'package:girepository/src/libraries.dart';
+import 'package:girepository/src/types.dart';
 
 enum GIFieldInfoFlag implements GFlag {
   isReadable(0),
@@ -19,8 +19,13 @@ enum GIFieldInfoFlag implements GFlag {
 
 final class GIFieldInfoNative extends Opaque {}
 
-class GIFieldInfo extends GIInfo<GIFieldInfoNative> {
-  const GIFieldInfo.fromPointer(super.pointer);
+extension GIFieldInfoPointerExt on GIFieldInfo {
+  Pointer<GIFieldInfoNative> get pointer => voidPointer.cast();
+}
+
+class GIFieldInfo extends GIBaseInfo {
+  GIFieldInfo.fromPointer(Pointer<GIFieldInfoNative> pointer)
+      : super.raw(pointer.cast());
 
   Set<GIFieldInfoFlag> getFlags() {
     return GFlag.split(
@@ -60,4 +65,4 @@ final _g_field_info_get_type = libgirepository.lookupFunction<
     ),
     Pointer<GITypeInfoNative> Function(
       Pointer<GIFieldInfoNative>,
-    )>('g_field_info_get_size');
+    )>('g_field_info_get_type');

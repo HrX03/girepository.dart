@@ -2,10 +2,10 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/info/vfunc.dart';
-import 'package:dlib_gen/src/libraries.dart';
-import 'package:dlib_gen/src/types.dart';
+import 'package:girepository/src/info/callable.dart';
+import 'package:girepository/src/info/vfunc.dart';
+import 'package:girepository/src/libraries.dart';
+import 'package:girepository/src/types.dart';
 
 enum GSignalFlag implements GFlag {
   runFirst(0),
@@ -27,8 +27,13 @@ enum GSignalFlag implements GFlag {
 
 final class GISignalInfoNative extends Opaque {}
 
-class GISignalInfo extends GIInfo<GISignalInfoNative> {
-  const GISignalInfo.fromPointer(super.pointer);
+extension GISignalInfoPointerExt on GISignalInfo {
+  Pointer<GISignalInfoNative> get pointer => voidPointer.cast();
+}
+
+class GISignalInfo extends GICallableInfo {
+  GISignalInfo.fromPointer(Pointer<GISignalInfoNative> pointer)
+      : super.raw(pointer.cast());
 
   Set<GSignalFlag> getFlags() {
     return GFlag.split(_g_signal_info_get_flags(pointer), GSignalFlag.values);

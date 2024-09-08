@@ -2,20 +2,28 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/info/arg.dart';
-import 'package:dlib_gen/src/info/constant.dart';
-import 'package:dlib_gen/src/info/field.dart';
-import 'package:dlib_gen/src/info/function.dart';
-import 'package:dlib_gen/src/info/interface.dart';
-import 'package:dlib_gen/src/info/property.dart';
-import 'package:dlib_gen/src/info/signal.dart';
-import 'package:dlib_gen/src/info/struct.dart';
-import 'package:dlib_gen/src/info/type.dart';
-import 'package:dlib_gen/src/info/vfunc.dart';
-import 'package:dlib_gen/src/libraries.dart';
-import 'package:dlib_gen/src/typelib.dart';
-import 'package:dlib_gen/src/types.dart';
+import 'package:girepository/src/info/arg.dart';
+import 'package:girepository/src/info/callable.dart';
+import 'package:girepository/src/info/callback.dart';
+import 'package:girepository/src/info/constant.dart';
+import 'package:girepository/src/info/enum.dart';
+import 'package:girepository/src/info/field.dart';
+import 'package:girepository/src/info/function.dart';
+import 'package:girepository/src/info/interface.dart';
+import 'package:girepository/src/info/object.dart';
+import 'package:girepository/src/info/property.dart';
+import 'package:girepository/src/info/registered_type.dart';
+import 'package:girepository/src/info/signal.dart';
+import 'package:girepository/src/info/struct.dart';
+import 'package:girepository/src/info/type.dart';
+import 'package:girepository/src/info/union.dart';
+import 'package:girepository/src/info/value.dart';
+import 'package:girepository/src/info/vfunc.dart';
+import 'package:girepository/src/libraries.dart';
+import 'package:girepository/src/typelib.dart';
+import 'package:girepository/src/types.dart';
 import 'package:ffi/ffi.dart';
+import 'package:meta/meta.dart';
 
 enum GIInfoType implements GEnum {
   invalid(0),
@@ -23,7 +31,7 @@ enum GIInfoType implements GEnum {
   callback(2),
   struct(3),
   boxed(4),
-  enumerate(5),
+  enum_(5),
   flags(6),
   object(7),
   interface(8),
@@ -49,12 +57,25 @@ enum GIInfoType implements GEnum {
   }
 }
 
-abstract class GIInfo<T extends NativeType> {
-  final Pointer<T> pointer;
+base class GIBaseInfoNative extends Opaque {}
 
-  const GIInfo(this.pointer);
+extension GIBaseInfoPointerExt on GIBaseInfo {
+  Pointer<GIBaseInfoNative> get pointer => voidPointer.cast();
+}
 
-  bool equal(GIInfo other) {
+class GIBaseInfo {
+  /// Avoid using this where possible, this is exposed only to allow
+  /// pointer casting on subclasses, prefer using the pointer
+  /// member exposed by extensions on the type.
+  final Pointer<Void> voidPointer;
+
+  @protected
+  GIBaseInfo.raw(this.voidPointer);
+
+  GIBaseInfo.fromPointer(Pointer<GIBaseInfoNative> pointer)
+      : voidPointer = pointer.cast();
+
+  bool equal(GIBaseInfo other) {
     return _g_base_info_equal(pointer.cast(), other.pointer.cast());
   }
 
@@ -118,29 +139,114 @@ abstract class GIInfo<T extends NativeType> {
   bool isDeprecated() {
     return _g_base_info_is_deprecated(pointer.cast());
   }
+}
 
-  G cast<G extends GIInfo>() {
+extension GIBaseInfoTypeExtension on GIBaseInfo {
+  bool _typeMatch(Set<GIInfoType> types) {
+    return types.contains(getType());
+  }
+
+  bool get isArgInfo {
+    return _typeMatch({GIInfoType.arg});
+  }
+
+  bool get isCallableInfo {
+    return _typeMatch({
+      GIInfoType.function,
+      GIInfoType.callback,
+      GIInfoType.signal,
+      GIInfoType.vfunc,
+    });
+  }
+
+  bool get isConstantInfo {
+    return _typeMatch({GIInfoType.constant});
+  }
+
+  bool get isEnumInfo {
+    return _typeMatch({GIInfoType.enum_, GIInfoType.flags});
+  }
+
+  bool get isFieldInfo {
+    return _typeMatch({GIInfoType.field});
+  }
+
+  bool get isFunctionInfo {
+    return _typeMatch({GIInfoType.function});
+  }
+
+  bool get isInterfaceInfo {
+    return _typeMatch({GIInfoType.interface});
+  }
+
+  bool get isObjectInfo {
+    return _typeMatch({GIInfoType.object});
+  }
+
+  bool get isPropertyInfo {
+    return _typeMatch({GIInfoType.property});
+  }
+
+  bool get isRegisteredTypeInfo {
+    return _typeMatch({
+      GIInfoType.boxed,
+      GIInfoType.enum_,
+      GIInfoType.flags,
+      GIInfoType.interface,
+      GIInfoType.object,
+      GIInfoType.struct,
+      GIInfoType.union,
+    });
+  }
+
+  bool get isSignalInfo {
+    return _typeMatch({GIInfoType.signal});
+  }
+
+  bool get isStructInfo {
+    return _typeMatch({GIInfoType.struct});
+  }
+
+  bool get isTypeInfo {
+    return _typeMatch({GIInfoType.type});
+  }
+
+  bool get isUnionInfo {
+    return _typeMatch({GIInfoType.union});
+  }
+
+  bool get isValueInfo {
+    return _typeMatch({GIInfoType.enumValue});
+  }
+
+  bool get isVFuncInfo {
+    return _typeMatch({GIInfoType.vfunc});
+  }
+
+  G cast<G extends GIBaseInfo>() {
     return switch (G) {
       const (GIArgInfo) => GIArgInfo.fromPointer(pointer.cast()),
       const (GIBaseInfo) => GIBaseInfo.fromPointer(pointer.cast()),
+      const (GICallableInfo) => GICallableInfo.fromPointer(pointer.cast()),
+      const (GICallbackInfo) => GICallbackInfo.fromPointer(pointer.cast()),
       const (GIConstantInfo) => GIConstantInfo.fromPointer(pointer.cast()),
+      const (GIEnumInfo) => GIEnumInfo.fromPointer(pointer.cast()),
       const (GIFieldInfo) => GIFieldInfo.fromPointer(pointer.cast()),
       const (GIFunctionInfo) => GIFunctionInfo.fromPointer(pointer.cast()),
       const (GIInterfaceInfo) => GIInterfaceInfo.fromPointer(pointer.cast()),
+      const (GIObjectInfo) => GIObjectInfo.fromPointer(pointer.cast()),
       const (GIPropertyInfo) => GIPropertyInfo.fromPointer(pointer.cast()),
+      const (GIRegisteredTypeInfo) =>
+        GIRegisteredTypeInfo.fromPointer(pointer.cast()),
       const (GISignalInfo) => GISignalInfo.fromPointer(pointer.cast()),
       const (GIStructInfo) => GIStructInfo.fromPointer(pointer.cast()),
       const (GITypeInfo) => GITypeInfo.fromPointer(pointer.cast()),
+      const (GIUnionInfo) => GIUnionInfo.fromPointer(pointer.cast()),
+      const (GIValueInfo) => GIValueInfo.fromPointer(pointer.cast()),
       const (GIVFuncInfo) => GIVFuncInfo.fromPointer(pointer.cast()),
       _ => throw UnsupportedError("Can't cast to unsupported type $G"),
     } as G;
   }
-}
-
-base class GIBaseInfoNative extends Opaque {}
-
-class GIBaseInfo extends GIInfo<GIBaseInfoNative> {
-  const GIBaseInfo.fromPointer(super.pointer);
 }
 
 final class GIAttributeIterNative extends Struct {
@@ -149,10 +255,11 @@ final class GIAttributeIterNative extends Struct {
 }
 
 extension type GIAttributeIter._(Pointer<GIAttributeIterNative> _this) {
+  Pointer<GIAttributeIterNative> get pointer => _this;
+
   static GIAttributeIter init() {
-    final empty = calloc<Int>()..value = 0;
     return GIAttributeIter._(
-      calloc<GIAttributeIterNative>()..ref._data = empty.cast(),
+      calloc<GIAttributeIterNative>()..ref._data = nullptr,
     );
   }
 }

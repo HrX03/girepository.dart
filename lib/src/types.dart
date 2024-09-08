@@ -1,5 +1,7 @@
 import 'dart:ffi';
 
+import 'package:ffi/ffi.dart';
+
 @AbiSpecificIntegerMapping({
   Abi.androidArm: Int32(),
   Abi.androidArm64: Int64(),
@@ -64,4 +66,17 @@ abstract class GEnum {
       orElse: () => enumValues[0],
     );
   }
+}
+
+List<String> charPPToString(Pointer<Pointer<Char>> nativeArray) {
+  final List<String> result = [];
+
+  int index = 0;
+  while (nativeArray[index] != nullptr) {
+    final str = nativeArray[index].cast<Utf8>().toDartString();
+    result.add(str);
+    index++;
+  }
+
+  return result;
 }

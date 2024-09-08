@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/info/type.dart';
-import 'package:dlib_gen/src/types.dart';
+import 'package:girepository/src/info/type.dart';
+import 'package:girepository/src/types.dart';
 import 'package:ffi/ffi.dart';
 
 final class GIArgumentNative extends Union {

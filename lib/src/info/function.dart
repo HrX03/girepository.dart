@@ -2,13 +2,13 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/argument.dart';
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/error.dart';
-import 'package:dlib_gen/src/errors.dart';
-import 'package:dlib_gen/src/libraries.dart';
-import 'package:dlib_gen/src/quark.dart';
-import 'package:dlib_gen/src/types.dart';
+import 'package:girepository/src/argument.dart';
+import 'package:girepository/src/error.dart';
+import 'package:girepository/src/errors.dart';
+import 'package:girepository/src/info/callable.dart';
+import 'package:girepository/src/libraries.dart';
+import 'package:girepository/src/quark.dart';
+import 'package:girepository/src/types.dart';
 import 'package:ffi/ffi.dart';
 
 final G_INVOKE_ERROR = GQuark.fromString("g-invoke-error-quark");
@@ -40,8 +40,13 @@ enum GIFunctionInfoFlag implements GFlag {
 
 final class GIFunctionInfoNative extends Opaque {}
 
-class GIFunctionInfo extends GIInfo<GIFunctionInfoNative> {
-  const GIFunctionInfo.fromPointer(super.pointer);
+extension GIFunctionInfoPointerExt on GIFunctionInfo {
+  Pointer<GIFunctionInfoNative> get pointer => voidPointer.cast();
+}
+
+class GIFunctionInfo extends GICallableInfo {
+  GIFunctionInfo.fromPointer(Pointer<GIFunctionInfoNative> pointer)
+      : super.raw(pointer.cast());
 
   String getSymbol() {
     return _g_function_info_get_symbol(pointer).cast<Utf8>().toDartString();

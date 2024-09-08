@@ -2,10 +2,10 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/info/type.dart';
-import 'package:dlib_gen/src/libraries.dart';
-import 'package:dlib_gen/src/types.dart';
+import 'package:girepository/src/info/base.dart';
+import 'package:girepository/src/info/type.dart';
+import 'package:girepository/src/libraries.dart';
+import 'package:girepository/src/types.dart';
 
 enum GITransfer implements GEnum {
   nothing(0),
@@ -44,8 +44,13 @@ enum GIScopeType implements GEnum {
 
 final class GIArgInfoNative extends Opaque {}
 
-class GIArgInfo extends GIInfo<GIArgInfoNative> {
-  const GIArgInfo.fromPointer(super.pointer);
+extension GIArgInfoPointerExt on GIArgInfo {
+  Pointer<GIArgInfoNative> get pointer => voidPointer.cast();
+}
+
+class GIArgInfo extends GIBaseInfo {
+  GIArgInfo.fromPointer(Pointer<GIArgInfoNative> pointer)
+      : super.raw(pointer.cast());
 
   int getClosure() {
     return _g_arg_info_get_closure(pointer);

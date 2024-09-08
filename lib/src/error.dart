@@ -3,9 +3,9 @@
 import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
-import 'package:dlib_gen/src/errors.dart';
-import 'package:dlib_gen/src/quark.dart';
-import 'package:dlib_gen/src/libraries.dart';
+import 'package:girepository/src/errors.dart';
+import 'package:girepository/src/quark.dart';
+import 'package:girepository/src/libraries.dart';
 
 T handleGError<T>(
   T Function(Pointer<Pointer<GErrorNative>> nativeErr) callback,

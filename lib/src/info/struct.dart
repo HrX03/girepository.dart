@@ -2,16 +2,21 @@
 
 import 'dart:ffi';
 
-import 'package:dlib_gen/src/info/base.dart';
-import 'package:dlib_gen/src/info/field.dart';
-import 'package:dlib_gen/src/info/function.dart';
-import 'package:dlib_gen/src/libraries.dart';
+import 'package:girepository/src/info/field.dart';
+import 'package:girepository/src/info/function.dart';
+import 'package:girepository/src/info/registered_type.dart';
+import 'package:girepository/src/libraries.dart';
 import 'package:ffi/ffi.dart';
 
 final class GIStructInfoNative extends Opaque {}
 
-class GIStructInfo extends GIInfo<GIStructInfoNative> {
-  const GIStructInfo.fromPointer(super.pointer);
+extension GIStructInfoPointerExt on GIStructInfo {
+  Pointer<GIStructInfoNative> get pointer => voidPointer.cast();
+}
+
+class GIStructInfo extends GIRegisteredTypeInfo {
+  GIStructInfo.fromPointer(Pointer<GIStructInfoNative> pointer)
+      : super.raw(pointer.cast());
 
   int getAlignment() {
     return _g_struct_info_get_alignment(pointer);
@@ -72,7 +77,7 @@ class GIStructInfo extends GIInfo<GIStructInfoNative> {
     );
   }
 
-  List<GIFunctionInfo> getConstants() {
+  List<GIFunctionInfo> getMethods() {
     final List<GIFunctionInfo> result = [];
     final nMethods = getNMethods();
 
