@@ -132,8 +132,10 @@ class GIBaseInfo {
     }
   }
 
-  GIBaseInfo getContainer() {
-    return GIBaseInfo.fromPointer(_g_base_info_get_container(pointer.cast()));
+  GIBaseInfo? getContainer() {
+    final result = _g_base_info_get_container(pointer.cast());
+    if (result == nullptr) return null;
+    return GIBaseInfo.fromPointer(result);
   }
 
   bool isDeprecated() {
